@@ -1,0 +1,52 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+      # Gałąź "build" trzyma gotowy plik do instalacji (raw.githubusercontent.com).
+      # Zwykły commit, bez force-push: webhook Greasy Fork reaguje tylko na zmienione pliki.
+      - name: Publish to build branch
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp dist/wykop-ai.user.js dist/wykop-ai.meta.js /tmp/
+          if git ls-remote --exit-code --heads origin build >/dev/null; then
+            git fetch origin build --depth=1
+            git switch build
+          else
+            git switch --orphan build
+            git rm -rf --quiet . || true
+          fi
+          cp /tmp/wykop-ai.user.js /tmp/wykop-ai.meta.js .
+          git add wykop-ai.user.js wykop-ai.meta.js
+          if git diff --cached --quiet; then echo "Bez zmian"; exit 0; fi
+          git commit -m "build: ${GITHUB_SHA::7}"
+          git push origin build
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            dist/wykop-ai.user.js
+            dist/wykop-ai.meta.js

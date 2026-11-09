@@ -1,0 +1,25 @@
+{
+  "name": "wykop-ai",
+  "version": "0.1.0",
+  "description": "Nieoficjalny, lekki interfejs dla wykop.pl jako userscript (mobile-first, iPhone + Safari).",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build && node scripts/ascii.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "preact": "^11.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "happy-dom": "^21.0.4",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.7",
+    "vite-plugin-monkey": "^8.1.1",
+    "vitest": "^5.1.0"
+  }
+}
